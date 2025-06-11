@@ -112,7 +112,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"user\": \"6841049006202b3f42de8814\"}",
+							"raw": "{\r\n    \"user\": \"68411560732e74d79af15144\"\r\n\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -191,8 +191,32 @@
 				{
 					"name": "Revertir Transacción",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/transaction/revertTransaction/:uid",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"transaction",
+								"revertTransaction",
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": "684765f099093a72d7a2df8c"
+								}
+							]
+						}
 					},
 					"response": []
 				}
@@ -227,12 +251,44 @@
 					"response": []
 				},
 				{
+					"name": "Get History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/getHistoryOfTransactions/:uid",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"user",
+								"getHistoryOfTransactions",
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": "6841081fc990836df7f396bc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get User Id",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/user/getUserById/6847721ce0b5c35272dec298",
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/getUserById/:uid",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -246,7 +302,13 @@
 								"v1",
 								"user",
 								"getUserById",
-								"6847721ce0b5c35272dec298"
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": ""
+								}
 							]
 						}
 					},
@@ -277,7 +339,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/user/updatePassword/6847721ce0b5c35272dec298",
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/updatePassword/:uid",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -291,7 +353,13 @@
 								"v1",
 								"user",
 								"updatePassword",
-								"6847721ce0b5c35272dec298"
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": ""
+								}
 							]
 						}
 					},
@@ -312,7 +380,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/user/updateUser/6847721ce0b5c35272dec298",
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/updateUser/:uid",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -326,7 +394,13 @@
 								"v1",
 								"user",
 								"updateUser",
-								"6847721ce0b5c35272dec298"
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": "6848c1e79891c6cda01fc2ff"
+								}
 							]
 						}
 					},
@@ -338,7 +412,7 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/user/deleteUser/68478b6a1a3de61514e5d1fd",
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/deleteUser/:uid",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -352,7 +426,45 @@
 								"v1",
 								"user",
 								"deleteUser",
-								"68478b6a1a3de61514e5d1fd"
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/getHistoryOfTransactions/:uid",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"user",
+								"getHistoryOfTransactions",
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": "6841081fc990836df7f396bc"
+								}
 							]
 						}
 					},

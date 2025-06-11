@@ -93,7 +93,10 @@ export const updatePassword = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { uid } = req.params;
-    const data = req.body;
+    const data = { ...req.body };
+
+    if ('dpi' in data) delete data.dpi;
+    if ('password' in data) delete data.password;
 
     const user = await User.findByIdAndUpdate(uid, data, { new: true });
 
