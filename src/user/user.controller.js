@@ -143,10 +143,9 @@ export const getHistory = async (req, res) => {
     const [total, users] = await Promise.all([
       User.countDocuments(query),
       User.find(query)
-      .skip(Number(desde))
-      .limit(Number(limite))
-      .select("historyOfSend")
-      .select("historyOfReceive"),
+        .skip(Number(desde))
+        .limit(Number(limite))
+        .select("historyOfSend historyOfReceive"),
     ]);
 
     return res.status(200).json({
