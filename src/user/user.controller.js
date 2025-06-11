@@ -134,3 +134,31 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
+
+export const getHistory = async (req, res) => {
+  try {
+    const { limite = 5, desde = 0 } = req.query;
+    const query = { status: true };
+
+    const [total, users] = await Promise.all([
+      User.countDocuments(query),
+      User.find(query)
+      .skip(Number(desde))
+      .limit(Number(limite))
+      .select("historyOfSend")
+      .select("historyOfReceive"),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      total,
+      users,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener los usuarios",
+      error: err.message,
+    });
+  }
+};

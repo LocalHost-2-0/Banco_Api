@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUserById, getUsers, updatePassword, updateUser, deleteUser } from "./user.controller.js";
+import { getUserById, getUsers, updatePassword, updateUser, deleteUser, getHistory } from "./user.controller.js";
 import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator } from "../middlewares/user-validators.js";
 
 const router = Router();
@@ -138,5 +138,33 @@ router.patch(
     deleteUserValidator,
     deleteUser
 );
+
+/**
+ * @swagger
+ * /user/getHistoryOfTransactions/{uid}:
+ *   get:
+ *     summary: Obtener historial de transacciones del usuario
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Historial de transacciones obtenido correctamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.get(
+    "/getHistoryOfTransactions/:uid",
+    getHistory
+)
 
 export default router;
