@@ -4,13 +4,15 @@ import {getProducts, addProduct, updateProduct, deactivateProduct, searchProduct
 
 import {addProductValidator, updateProductValidator, deactivateProductValidator, searchProductValidator} from "../middlewares/product-validator.js";
 
+import { uploadProductImage, handleUploadErrors } from '../middlewares/cloudinary-uploads.js';
+
 const router = Router()
 
 router.get("/", getProducts);
 
-router.post("/agregar", addProductValidator ,addProduct);
+router.post("/agregar", uploadProductImage, addProductValidator, handleUploadErrors ,addProduct);
 
-router.put("/actualizar/:id", updateProductValidator ,updateProduct);
+router.put("/actualizar/:id", uploadProductImage, updateProductValidator, handleUploadErrors ,updateProduct);
 
 router.patch("/desactivar/:id", deactivateProductValidator ,deactivateProduct);
 

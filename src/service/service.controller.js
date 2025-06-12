@@ -1,4 +1,5 @@
 import Service from "./service.model.js"
+import cloudinary from "../middlewares/cloudinary-uploads.js";
 
 export const getServices = async (req, res) => {
     try {
@@ -28,11 +29,16 @@ export const getServices = async (req, res) => {
     }
 }
 
+
 export const addService = async (req, res) => {
     try {
         const data = req.body;
-        const service = new Service(data);
+        
+        if (req.file) {
+            data.image = req.file.path;
+        }
 
+        const service = new Service(data);
         await service.save();
 
         res.status(200).json({
@@ -40,7 +46,6 @@ export const addService = async (req, res) => {
             message: "Service added successfully",
             service
         });
-
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -55,20 +60,33 @@ export const updateService = async (req, res) => {
         const { id } = req.params;
         const data = req.body;
 
+        if (req.file) {
+
+            const oldService = await Service.findById(id);
+            if (oldService.image) {
+                const publicId = oldService.image.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`services/${publicId}`);
+            }
+
+            const result = await cloudinary.uploader.upload(req.file.path);
+            data.image = result.secure_url;
+        }
+
         const updatedService = await Service.findByIdAndUpdate(id, data, { new: true });
+        
         if (!updatedService) {
             return res.status(404).json({
                 success: false,
                 message: "Service not found"
             });
         }
+
         res.status(200).json({
             success: true,
             message: "Service updated successfully",
             service: updatedService
         });
-    }
-    catch (error) {
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: "Error updating service",

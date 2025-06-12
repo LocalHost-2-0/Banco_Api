@@ -1,5 +1,6 @@
 import Product from "./product.model.js"
 
+
 export const getProducts = async (req, res) => {
     try{ 
         
@@ -29,26 +30,28 @@ export const getProducts = async (req, res) => {
 }
 
 export const addProduct = async (req, res) => {
-
-    try{ 
-
+    try { 
         const data = req.body;
-        const product = new Product(data);
+        
+        if (req.file) {
+            data.image = req.file.path;
+        }
 
+        const product = new Product(data);
         await product.save();
         
         res.status(200).json({
             success: true,
             message: "Producto agregado correctamente",
             product
-        })
+        });
 
-    }catch(error) {
+    } catch(error) {
         res.status(500).json({
             success: false,
             message: "Error al agregar el producto",
             error: error.message
-        })
+        });
     }
 }
 
@@ -56,6 +59,10 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const data = req.body;
+
+        if (req.file) {
+            data.image = req.file.path;
+        }
 
         const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true });
 
@@ -76,9 +83,10 @@ export const updateProduct = async (req, res) => {
             success: false,
             message: "Error al actualizar el producto",
             error: error.message
-        })
+        });
     }
 }
+
 
 export const deactivateProduct = async (req, res) => {
     try {
