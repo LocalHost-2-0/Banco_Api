@@ -27,6 +27,9 @@ const walletSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: "Usuario"
     },
+    favoriteAccount:[{
+        type: Number
+    }],
     status: {
         type: Boolean,
         default: true
