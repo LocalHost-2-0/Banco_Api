@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "cbf46831-4151-4bb4-a3c3-33c8f9441fc0",
+		"_postman_id": "5ff3c0cf-9c8a-48bb-8bb4-3bfb0796c925",
 		"name": "Wallet",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "38544176"
+		"_exporter_id": "38317977"
 	},
 	"item": [
 		{
@@ -26,7 +26,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Javier\",\r\n    \"userName\": \"Zodiacal\",\r\n    \"dpi\": 101987654321,\r\n    \"address\": \"Zona 7, Guatemala\",\r\n    \"phone\": \"55885335\",\r\n    \"email\": \"javierherrera5513@gmail.com\",\r\n    \"password\": \"Aurorita0306@\",\r\n    \"workName\": \"Ingeniero en sistemas\",\r\n    \"monthEarnings\": 3600\r\n}",
+							"raw": "{\r\n    \"name\": \"Jose\",\r\n    \"userName\": \"dinox\",\r\n    \"dpi\": 3900429860101,\r\n    \"address\": \"Zona 7, Guatemala\",\r\n    \"phone\": \"36643542\",\r\n    \"email\": \"javi@gmail.com\",\r\n    \"password\": \"Aurorita0306@\",\r\n    \"workName\": \"Ingen\",\r\n    \"monthEarnings\": 3600\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -70,7 +70,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"javierherrera5513@gmail.com\",\r\n    \"password\": \"Aurorita0306@\"\r\n}",
+							"raw": "{\r\n    \"email\": \"javierherrera5513@gmail.com\",\r\n    \"password\": \"Sabado12@\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -112,7 +112,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"user\": \"6841049006202b3f42de8814\"}",
+							"raw": "{      \r\n    \"noAccount\": 3900429211,\r\n    \"noAccountBalance\": 1234567897,\r\n    \"savingAccount\": 4566789123,\r\n    \"foreingCurrency\": 789456123,\r\n    \"foreingCurrencyBalance\": 456789123,\r\n    \"user\": \"6847721ce0b5c35272dec298\"\r\n\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -161,7 +161,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"receiver\": \"6841081fc990836df7f396bc\",\r\n  \"sender\": \"68411560732e74d79af15144\",\r\n  \"amount\": 300,\r\n  \"typeSend\": \"monetary\",\r\n  \"typeRecive\": \"saving\"\r\n}\r\n",
+							"raw": "{\r\n  \"receiver\": \"684798611757620ac60cc3fb\",\r\n  \"sender\": \"6847721ce0b5c35272dec298\",\r\n  \"amount\": 300,\r\n  \"type\": \"monetary\",\r\n  \"typeSender\": \"saving\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -192,7 +192,25 @@
 					"name": "Revertir Transacción",
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/transaction/revertTransaction/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"transaction",
+								"revertTransaction",
+								""
+							]
+						}
 					},
 					"response": []
 				}

@@ -1,7 +1,12 @@
 import { Router } from "express";
-import { createAccount, getAmountMoney, getMovementsByAccount } from "./wallet.controller.js";
+import {
+  createAccount,
+  getAmountMoney,
+  getMovementsByAccount,
+} from "./wallet.controller.js";
+import { getWalltValidator } from "../middlewares/wallet-validators.js";
 
-const router = Router()
+const router = Router();
 
 /**
  * @swagger
@@ -17,10 +22,7 @@ const router = Router()
  *       500:
  *         description: Error interno del servidor
  */
-router.get(
-    "/create",
-    createAccount
-)
+router.get("/create", createAccount);
 
 /**
  * @swagger
@@ -45,10 +47,7 @@ router.get(
  *       500:
  *         description: Error interno del servidor
  */
-router.get(
-    "/balances/:userId",
-    getAmountMoney
-);
+router.get("/balances/:userId", getWalltValidator, getAmountMoney);
 
 /**
  * @swagger
@@ -73,9 +72,6 @@ router.get(
  *       500:
  *         description: Error interno del servidor
  */
-router.get(
-    "/movements/:userId",
-    getMovementsByAccount
-);
+router.get("/movements/:userId", getWalltValidator, getMovementsByAccount);
 
-export default router
+export default router;
