@@ -16,7 +16,7 @@ export const createAccount = async (req, res) => {
         const wallet = await Wallet.create(data);
         const user = await User.findByIdAndUpdate(data.user, { wallet: wallet._id }, { new: true });
         const balance = await User.findById(data.user)
-        await Wallet.findByIdAndUpdate(data._id, { $inc: { noAccountBalance: balance.monthEarnings } })
+        await Wallet.findByIdAndUpdate(wallet._id, { $inc: { noAccountBalance: balance.monthEarnings } })
 
         return res.status(200).json({
             success: true,
@@ -101,3 +101,33 @@ export const numberVerificationAccount = async (type) => {
         throw new Error("Number generation failed: " + error);
     }
 };
+
+export const addFavoriteAccount = async(req,res) =>{
+    try{
+        const {typeAccount} = req.body;
+        const {uid} = req.body;
+        const wallet = await  Wallet.findById(uid);
+
+        const accounts = {
+            noAccount: wallet.noAccount,
+            savingAccount: wallet.savingAccount,
+            foreingCurrency: wallet.foreingCurrency
+        }
+        const account = accounts[typeAccount];
+
+
+        const accountFav = await Wallet.findByIdAndUpdate(uid, {$addToSet: {favoriteAccount: account}}, {new: true})
+
+        return res.status(200).json({
+            success: true,
+            message: "La cuenta se ha agregado a favoritos exitosamente",
+            accountFav
+        })
+
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "No se ha podido agregar la cuenta a favoritos"
+        })
+    }
+}
