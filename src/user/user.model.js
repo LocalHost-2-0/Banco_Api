@@ -65,7 +65,12 @@ const userSchema = Schema({
     status: {
         type: Boolean,
         default: true
-    }
+    },
+    favorites: [{
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: []
+    }],
 },
     {
         versionKey: false,

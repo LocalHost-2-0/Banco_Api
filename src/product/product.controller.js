@@ -59,19 +59,29 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const data = req.body;
-
-        if (req.file) {
-            data.image = req.file.path;
-        }
-
-        const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true });
-
-        if (!updatedProduct) {
+        const currentProduct = await Product.findById(id);
+        
+        if (!currentProduct) {
             return res.status(404).json({
                 success: false,
                 message: "Producto no encontrado"
             });
         }
+        if (req.file) {
+            data.image = req.file.path;
+            
+            if (currentProduct.image) {
+                try {
+
+                    const publicId = currentProduct.image.split('/').pop().split('.')[0];
+                    await cloudinary.uploader.destroy(`products/${publicId}`);
+                } catch (error) {
+                    console.error("Error al eliminar la imagen anterior:", error);
+                }
+            }
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(id, data, { new: true });
 
         res.status(200).json({
             success: true,
