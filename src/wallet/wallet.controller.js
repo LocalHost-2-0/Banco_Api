@@ -200,3 +200,34 @@ export const getMovementsByAccount = async (req, res) => {
     });
   }
 };
+
+
+export const addFavoriteAccount = async(req,res) =>{
+    try{
+        const {typeAccount} = req.body;
+        const {uid} = req.body;
+        const wallet = await  Wallet.findById(uid);
+
+        const accounts = {
+            noAccount: wallet.noAccount,
+            savingAccount: wallet.savingAccount,
+            foreingCurrency: wallet.foreingCurrency
+        }
+        const account = accounts[typeAccount];
+
+
+        const accountFav = await Wallet.findByIdAndUpdate(uid, {$addToSet: {favoriteAccount: account}}, {new: true})
+
+        return res.status(200).json({
+            success: true,
+            message: "La cuenta se ha agregado a favoritos exitosamente",
+            accountFav
+        })
+
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "No se ha podido agregar la cuenta a favoritos"
+        })
+    }
+}

@@ -1,8 +1,10 @@
 import { Router } from "express";
+
 import {
   createAccount,
   getAmountMoney,
   getMovementsByAccount,
+  addFavoriteAccount,
 } from "./wallet.controller.js";
 import { getWalltValidator } from "../middlewares/wallet-validators.js";
 
@@ -73,5 +75,7 @@ router.get("/balances/:userId", getWalltValidator, getAmountMoney);
  *         description: Error interno del servidor
  */
 router.get("/movements/:userId", getWalltValidator, getMovementsByAccount);
+
+router.patch("/addFavoriteAccount/:uid", addFavoriteAccount);
 
 export default router;
