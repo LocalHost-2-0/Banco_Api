@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { getUserById, getUsers, updatePassword, updateUser, deleteUser, getHistory } from "./user.controller.js";
-import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator } from "../middlewares/user-validators.js";
+import { getUserById, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
+import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator, addFavoriteValidator, getFavoritesValidator } from "../middlewares/user-validators.js";
 
 const router = Router();
 
@@ -166,5 +166,9 @@ router.get(
     "/getHistoryOfTransactions/:uid",
     getHistory
 )
+
+router.post('/addFavorite', addFavoriteValidator , addFavorite);
+
+router.get('/Favorites', getFavoritesValidator ,getFavorites);
 
 export default router;
