@@ -1,4 +1,5 @@
 import Product from "./product.model.js"
+import User from "../user/user.model.js"
 
 
 export const getProducts = async (req, res) => {
@@ -167,4 +168,141 @@ export const searchProduct = async (req, res) => {
         });
     }
 };
+
+export const assignProductToUser = async (req, res) => {
+    try {
+        const { userId, productId } = req.body;
+
+        if (!userId || !productId) {
+            return res.status(400).json({
+                success: false,
+                message: "Se requieren tanto el ID de usuario como el ID de producto"
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            });
+        }
+        const product = await Product.findById(productId);
+        if (!product || !product.status) {
+            return res.status(404).json({
+                success: false,
+                message: "Producto no encontrado o no está activo"
+            });
+        }
+
+        if (user.products.includes(productId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Este producto ya está asignado al usuario"
+            });
+        }
+
+        user.products.push(productId);
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Producto asignado al usuario correctamente",
+            user: {
+                id: user._id,
+                name: user.name,
+                products: user.products
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al asignar el producto al usuario",
+            error: error.message
+        });
+    }
+};
+
+export const removeProductFromUser = async (req, res) => {
+    try {
+        const { userId, productId } = req.body;
+
+        if (!userId || !productId) {
+            return res.status(400).json({
+                success: false,
+                message: "Se requieren tanto el ID de usuario como el ID de producto"
+            });
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            });
+        }
+        if (!user.products.includes(productId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Este producto no está asignado al usuario"
+            });
+        }
+
+        user.products = user.products.filter(id => id.toString() !== productId);
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Producto eliminado del usuario correctamente",
+            user: {
+                id: user._id,
+                name: user.name,
+                products: user.products
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al eliminar el producto del usuario",
+            error: error.message
+        })
+    }
+}
+
+
+
+export const getUserProducts = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Se requiere el ID de usuario"
+            });
+        }
+        const user = await User.findById(userId).populate('products');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Productos del usuario obtenidos correctamente",
+            products: user.products
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al obtener los productos del usuario",
+            error: error.message
+        })
+    }
+}
+
 

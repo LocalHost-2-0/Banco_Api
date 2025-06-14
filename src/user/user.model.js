@@ -71,6 +71,13 @@ const userSchema = Schema({
         ref: "User",
         default: []
     }],
+    products: [{
+    type: Schema.Types.ObjectId,
+    ref: "Product",
+    default: []
+}],
+    
+
 },
     {
         versionKey: false,
