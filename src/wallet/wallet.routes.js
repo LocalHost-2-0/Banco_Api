@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createAccount } from "./wallet.controller.js";
+import { createAccount, addFavoriteAccount } from "./wallet.controller.js";
 
 const router = Router()
 
@@ -18,6 +18,11 @@ const router = Router()
 router.get(
     "/create",
     createAccount
+)
+
+router.patch(
+    "/addFavoriteAccount/:uid",
+    addFavoriteAccount
 )
 
 export default router
