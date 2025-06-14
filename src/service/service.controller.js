@@ -1,4 +1,5 @@
 import Service from "./service.model.js"
+import User from "../user/user.model.js"
 import cloudinary from "../middlewares/cloudinary-uploads.js";
 
 export const getServices = async (req, res) => {
@@ -153,5 +154,143 @@ export const searchService = async (req, res) => {
             message: "Error searching for services",
             error: error.message
         });
+    }
+}
+
+export const assignServiceToUser = async (req, res) => {
+    try {
+        const { userId, serviceId } = req.body;
+
+        if (!userId || !serviceId) {
+            return res.status(400).json({
+                success: false,
+                message: "Se requieren tanto el ID de usuario como el ID de servicio"
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            });
+        }
+
+        const service = await Service.findById(serviceId);
+        if (!service || !service.status) {
+            return res.status(404).json({
+                success: false,
+                message: "Servicio no encontrado o no está activo"
+            });
+        }
+
+        if (user.services.includes(serviceId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Este servicio ya está asignado al usuario"
+            });
+        }
+
+        user.services.push(serviceId);
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Servicio asignado al usuario correctamente",
+            user: {
+                id: user._id,
+                name: user.name,
+                services: user.services
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al asignar el servicio al usuario",
+            error: error.message
+        })
+    }
+}
+
+export const removeServiceFromUser = async (req, res) => {
+    try {
+        const { userId, serviceId } = req.body;
+
+        if (!userId || !serviceId) {
+            return res.status(400).json({
+                success: false,
+                message: "Se requieren tanto el ID de usuario como el ID de servicio"
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            });
+        }
+
+        if (!user.services.includes(serviceId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Este servicio no está asignado al usuario"
+            });
+        }
+
+        user.services = user.services.filter(id => id.toString() !== serviceId);
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Servicio eliminado del usuario correctamente",
+            user: {
+                id: user._id,
+                name: user.name,
+                services: user.services
+            }
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al eliminar el servicio del usuario",
+            error: error.message
+        })
+    }
+}
+
+export const getUserServices = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "Se requiere el ID de usuario"
+            });
+        }
+
+        const user = await User.findById(userId).populate('services');
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Servicios del usuario obtenidos correctamente",
+            services: user.services
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al obtener los servicios del usuario",
+            error: error.message
+        })
     }
 }

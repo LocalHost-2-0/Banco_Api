@@ -75,6 +75,12 @@ const userSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "Product",
     default: []
+    }],
+    
+    services: [{
+    type: Schema.Types.ObjectId,
+    ref: "Service",
+    default: []
 }],
     
 
