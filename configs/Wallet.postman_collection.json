@@ -688,48 +688,6 @@
 			"name": "Product",
 			"item": [
 				{
-					"name": "ListarProductos",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/product/",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "3005",
-							"path": [
-								"walletManager",
-								"v1",
-								"product",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Agregar",
 					"request": {
 						"auth": {
@@ -768,6 +726,48 @@
 								"v1",
 								"product",
 								"agregar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListarProductos",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/product/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"product",
+								""
 							]
 						}
 					},
@@ -819,46 +819,6 @@
 					"response": []
 				},
 				{
-					"name": "Desactivar",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2ODQ3NzdiOWRiNmY3MzA1ODMzMTBkYmMiLCJpYXQiOjE3NDk1MTk2NjYsImV4cCI6MTc0OTUyMzI2Nn0.9eYWtDcyiWUKv2QfR2iw4aSs2_WhJHIFLBD-vuRY880",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/product/desactivar/68477cec2832c31aa5d0c5e8",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "3005",
-							"path": [
-								"walletManager",
-								"v1",
-								"product",
-								"desactivar",
-								"68477cec2832c31aa5d0c5e8"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Buscar",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -901,6 +861,46 @@
 								"product",
 								"buscar",
 								"gusi"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Desactivar",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2ODQ3NzdiOWRiNmY3MzA1ODMzMTBkYmMiLCJpYXQiOjE3NDk1MTk2NjYsImV4cCI6MTc0OTUyMzI2Nn0.9eYWtDcyiWUKv2QfR2iw4aSs2_WhJHIFLBD-vuRY880",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/product/desactivar/68477cec2832c31aa5d0c5e8",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"product",
+								"desactivar",
+								"68477cec2832c31aa5d0c5e8"
 							]
 						}
 					},
@@ -1048,41 +1048,6 @@
 			"name": "Services",
 			"item": [
 				{
-					"name": "Listar",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/service/",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "3005",
-							"path": [
-								"walletManager",
-								"v1",
-								"service",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Agregar",
 					"request": {
 						"auth": {
@@ -1172,26 +1137,22 @@
 					"response": []
 				},
 				{
-					"name": "Desactivar",
+					"name": "Listar",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2ODQ3NzdiOWRiNmY3MzA1ODMzMTBkYmMiLCJpYXQiOjE3NDk1MTk2NjYsImV4cCI6MTc0OTUyMzI2Nn0.9eYWtDcyiWUKv2QfR2iw4aSs2_WhJHIFLBD-vuRY880",
-									"type": "string"
-								}
-							]
+							"type": "noauth"
 						},
-						"method": "PATCH",
+						"method": "GET",
 						"header": [],
 						"body": {
 							"mode": "raw",
 							"raw": ""
 						},
 						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/service/desactivar/6847860d6d97bf6da8eb2f7a",
+							"raw": "http://127.0.0.1:3005/walletManager/v1/service/",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1204,8 +1165,7 @@
 								"walletManager",
 								"v1",
 								"service",
-								"desactivar",
-								"6847860d6d97bf6da8eb2f7a"
+								""
 							]
 						}
 					},
@@ -1249,6 +1209,46 @@
 								"service",
 								"buscar",
 								"r"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Desactivar",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2ODQ3NzdiOWRiNmY3MzA1ODMzMTBkYmMiLCJpYXQiOjE3NDk1MTk2NjYsImV4cCI6MTc0OTUyMzI2Nn0.9eYWtDcyiWUKv2QfR2iw4aSs2_WhJHIFLBD-vuRY880",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/service/desactivar/6847860d6d97bf6da8eb2f7a",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"service",
+								"desactivar",
+								"6847860d6d97bf6da8eb2f7a"
 							]
 						}
 					},
