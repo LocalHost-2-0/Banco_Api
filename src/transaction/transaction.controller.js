@@ -77,7 +77,7 @@ export const createTransaction = async (req, res) => {
                     console.log("Timeout cancelado porque la transacción fue revertida")
                 }
             } catch {
-                
+                console.log("Error al verificar el estado de la transacción")
             }
         }, 5000)
 
@@ -143,3 +143,34 @@ export const revertTransaction = async (req, res) => {
         });
     }
 };
+
+export const depositTransaction = async(req,res) =>{
+    try{
+        const {receiver, sender, amount, type} = req.body
+        const receiverUser = await User.findById(receiver)
+        const receiverWallet = await Wallet.findById(receiverUser.wallet)
+        const typeSender = "Deposit"
+        const typeOfAccount = {
+            monetary: "noAccountBalance",
+            saving: "savingAccountBalance",
+            foreing: " foreingCurrencyBalance"
+        }
+        const typeAcountSender = typeOfAccount[type]
+
+        await Wallet.findByIdAndUpdate(receiverWallet._id, {[typeAcountSender]: amount}, {new: true})
+        const transactionDeposit = await Transaction.create({receiver, sender, amount, type, typeSender})
+
+        return res.status(201).json({
+            success: true,
+            message: "Deposito realizado con éxito",
+            transactionDeposit
+        })
+        
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Error al ejecutar el deposito",
+            error: error.message
+        })
+    }
+}
