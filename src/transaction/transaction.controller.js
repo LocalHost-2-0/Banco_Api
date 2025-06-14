@@ -174,3 +174,100 @@ export const depositTransaction = async(req,res) =>{
         })
     }
 }
+
+export const updateDepositTransaction = async(req,res) =>{
+    try{
+        const {uid} = req.params
+        const {amount} = req.body
+
+        const transaction = await Transaction.findByIdAndUpdate(uid, {amount: amount} , {new: true})
+        res.status(200).json({
+            success: true,
+            message: "Deposito Actualizado con éxito",
+            transaction
+        })
+
+    }catch(error){
+        return res.status(500).json({
+            success: false,
+            message: "Error al actualizar el deposito",
+            error: error.message
+        })
+    }
+}
+
+export const updateTransaction = async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const { amount } = req.body;
+
+        const transaction = await Transaction.findById(uid);
+        if (!transaction) {
+            return res.status(404).json({
+                success: false,
+                message: "Transacción no encontrada"
+            });
+        }
+
+        const senderUser = await User.findById(transaction.sender);
+        const receiverUser = await User.findById(transaction.receiver);
+        const senderWallet = await Wallet.findById(senderUser.wallet);
+        const receiverWallet = await Wallet.findById(receiverUser.wallet);
+        
+        const typeOfAccountSender = {
+            monetary: "noAccountBalance",
+            saving: "savingAccountBalance",
+            foreing: "foreingCurrencyBalance"
+        };
+
+        const typeOfAccountReceiver = {
+            monetary: "noAccountBalance",
+            saving: "savingAccountBalance",
+            foreing: "foreingCurrencyBalance"
+        };
+
+        const typeAccountSend = typeOfAccountSender[transaction.typeSender];
+        const typeAccountReceiver = typeOfAccountReceiver[transaction.type];
+
+        const difference = amount - transaction.amount;
+
+        if (difference < 0) {
+            if (senderWallet[typeAccountSend] < Math.abs(difference)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "El balance para efectuar la actualización es insuficiente"
+                });
+            }
+            await Promise.all([
+                Wallet.findByIdAndUpdate(receiverWallet._id, {$inc: { [typeAccountReceiver]: -Math.abs(difference) }}, { new: true }),
+                Wallet.findByIdAndUpdate(senderWallet._id, {$inc: { [typeAccountSend]: Math.abs(difference) }}, { new: true }),
+            ]);
+        } else {
+            if (receiverWallet[typeAccountReceiver] < Math.abs(difference)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "El balance para efectuar la actualización es insuficiente"
+                });
+            }
+            await Promise.all([
+                Wallet.findByIdAndUpdate(receiverWallet._id, {$inc: { [typeAccountReceiver]: Math.abs(difference) }}, { new: true }),
+                Wallet.findByIdAndUpdate(senderWallet._id, {$inc: { [typeAccountSend]: -Math.abs(difference) }}, { new: true }),
+            ]);
+        }
+
+        const updatedTransaction = await Transaction.findByIdAndUpdate(uid, { amount: amount }, { new: true });
+
+        return res.status(200).json({
+            success: true,
+            message: "Transacción actualizada con éxito",
+            updatedTransaction
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al actualizar la transacción",
+            error: error.message
+        });
+    }
+}
