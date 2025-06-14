@@ -69,3 +69,38 @@ export const searchServiceValidator = [
     catchErrors
 ]
     
+export const assignServiceToUserValidator = [
+    validateJWT,
+    hasRoles("ADMIN_ROLE"),
+    body("userId")
+        .isMongoId()
+        .withMessage("Invalid MongoDB ID for user"),
+    body("serviceId")
+        .isMongoId()
+        .withMessage("Invalid MongoDB ID for service"),
+    validationsFields,
+    catchErrors
+]
+
+export const removeServiceFromUserValidator = [
+    validateJWT,
+    hasRoles("ADMIN_ROLE"),
+    body("userId")
+        .isMongoId()
+        .withMessage("Invalid MongoDB ID for user"),
+    body("serviceId")
+        .isMongoId()
+        .withMessage("Invalid MongoDB ID for service"),
+    validationsFields,
+    catchErrors
+]
+
+export const getUserServicesValidator = [
+    validateJWT,
+    hasRoles("ADMIN_ROLE"),
+    param("userId")
+        .isMongoId()
+        .withMessage("Invalid MongoDB ID for user"),
+    validationsFields,
+    catchErrors
+]

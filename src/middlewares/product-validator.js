@@ -91,3 +91,49 @@ export const searchProductValidator = [
     catchErrors
 ]
 
+export const assignProductToUserValidator = [
+    validateJWT,
+    hasRoles('ADMIN_ROLE'),
+    body('userId')
+        .notEmpty()
+        .withMessage('User ID is required')
+        .isMongoId()
+        .withMessage('Invalid MongoDB ID'),
+    body('productId')
+        .notEmpty()
+        .withMessage('Product ID is required')
+        .isMongoId()
+        .withMessage('Invalid MongoDB ID'),
+    validationsFields,
+    catchErrors
+]
+
+export const removeProductFromUserValidator = [
+    validateJWT,
+    hasRoles('ADMIN_ROLE'),
+    body('userId')
+        .notEmpty()
+        .withMessage('User ID is required')
+        .isMongoId()
+        .withMessage('Invalid MongoDB ID'),
+    body('productId')
+        .notEmpty()
+        .withMessage('Product ID is required')
+        .isMongoId()
+        .withMessage('Invalid MongoDB ID'),
+    validationsFields,
+    catchErrors
+]
+
+export const getUserProductsValidator = [
+    validateJWT,
+    hasRoles('ADMIN_ROLE'),
+    param('userId')
+        .notEmpty()
+        .withMessage('User ID is required')
+        .isMongoId()
+        .withMessage('Invalid MongoDB ID'),
+    validationsFields,
+    catchErrors
+]
+
