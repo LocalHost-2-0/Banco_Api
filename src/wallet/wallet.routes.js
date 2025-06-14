@@ -1,28 +1,81 @@
 import { Router } from "express";
-import { createAccount, addFavoriteAccount } from "./wallet.controller.js";
 
-const router = Router()
+import {
+  createAccount,
+  getAmountMoney,
+  getMovementsByAccount,
+  addFavoriteAccount,
+} from "./wallet.controller.js";
+import { getWalltValidator } from "../middlewares/wallet-validators.js";
+
+const router = Router();
 
 /**
  * @swagger
  * /wallet/create:
  *   get:
- *     summary: Create a new wallet account
+ *     summary: Crear una nueva cuenta de wallet
  *     tags: [Wallet]
  *     responses:
- *       201:
- *         description: Wallet created
+ *       200:
+ *         description: Cuentas generadas correctamente
  *       400:
- *         description: Bad request
+ *         description: Solicitud incorrecta
+ *       500:
+ *         description: Error interno del servidor
  */
-router.get(
-    "/create",
-    createAccount
-)
+router.get("/create", createAccount);
 
-router.patch(
-    "/addFavoriteAccount/:uid",
-    addFavoriteAccount
-)
+/**
+ * @swagger
+ * /wallet/balances/{userId}:
+ *   get:
+ *     summary: Obtener los saldos de las cuentas de un usuario
+ *     tags: [Wallet]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Saldos obtenidos correctamente
+ *       400:
+ *         description: Solicitud incorrecta
+ *       404:
+ *         description: Wallet no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get("/balances/:userId", getWalltValidator, getAmountMoney);
 
-export default router
+/**
+ * @swagger
+ * /wallet/movements/{userId}:
+ *   get:
+ *     summary: Obtener los movimientos de todas las cuentas de un usuario, ordenados de mayor a menor
+ *     tags: [Wallet]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Movimientos obtenidos correctamente
+ *       400:
+ *         description: Solicitud incorrecta
+ *       404:
+ *         description: Wallet no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get("/movements/:userId", getWalltValidator, getMovementsByAccount);
+
+router.patch("/addFavoriteAccount/:uid", addFavoriteAccount);
+
+export default router;
