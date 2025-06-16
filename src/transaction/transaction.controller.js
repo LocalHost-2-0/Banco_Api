@@ -1,128 +1,95 @@
-import Transaction from "./transaction.model.js";
-import User from "../user/user.model.js";
-import Wallet from "../wallet/wallet.model.js";
-import { validateTransactionDayLimit } from "../helpers/transaction-limitator.js";
+import Transaction from "./transaction.model.js"
+import User from "../user/user.model.js"
+import Wallet from "../wallet/wallet.model.js"
+import { validateTransactionDayLimit } from "../helpers/transaction-limitator.js"
 
 export const createTransaction = async (req, res) => {
     try {
-        const { receiver, sender, amount, typeSend, typeRecive } = req.body;
+        const { receiver, sender, amount, typeSend, typeRecive } = req.body
 
         const typeOfAccountSender = {
             monetary: "noAccountBalance",
             saving: "savingAccountBalance",
-            foreing: "foreingCurrencyBalance",
-        };
+            foreing: "foreingCurrencyBalance"
+        }
         const typeOfAccountReceiver = {
             monetary: "noAccountBalance",
             saving: "savingAccountBalance",
-            foreing: "foreingCurrencyBalance",
-        };
-        const typeAccountSend = typeOfAccountSender[typeSend];
-        const typeAccountReceiver = typeOfAccountReceiver[typeRecive];
+            foreing: "foreingCurrencyBalance"
+        }
+        const typeAccountSend = typeOfAccountSender[typeSend]
+        const typeAccountReceiver = typeOfAccountReceiver[typeRecive]
 
-        const receiverUser = await User.findById(receiver);
-        const senderUser = await User.findById(sender);
+        const receiverUser = await User.findById(receiver)
+        const senderUser = await User.findById(sender)
 
-        const validator = await Wallet.findById(senderUser.wallet);
+        const validator = await Wallet.findById(senderUser.wallet)
         if (validator[typeAccountSend] < amount) {
             return res.status(500).json({
                 success: false,
-                message: "El balance para efectuar la transacción es insuficiente",
-            });
+                message: "El balance para efectuar la transacción es insuficiente"
+            })
         }
 
         try {
-            await validateTransactionDayLimit(sender);
+            await validateTransactionDayLimit(sender)
         } catch (error) {
             return res.status(500).json({
                 success: false,
                 message: "Error al ejecutar la transacción, limite diario alcanzado",
-            });
+            })
         }
 
         await Promise.all([
-            Wallet.findByIdAndUpdate(
-                receiverUser.wallet,
-                { $inc: { [typeAccountReceiver]: amount } },
-                { new: true }
-            ),
-            Wallet.findByIdAndUpdate(
-                senderUser.wallet,
-                { $inc: { [typeAccountSend]: -amount } },
-                { new: true }
-            ),
-            Wallet.findByIdAndUpdate(
-                senderUser.wallet,
-                {
-                    $inc: {
-                        [`${typeSend}AccountMovements`]: 1,
-                    },
-                },
-                { new: true }
-            ),
-        ]);
+            Wallet.findByIdAndUpdate(receiverUser.wallet, { $inc: { [typeAccountReceiver]: amount } }, { new: true }),
+            Wallet.findByIdAndUpdate(senderUser.wallet, { $inc: { [typeAccountSend]: -amount } }, { new: true })
+        ])
 
-        const type = typeRecive;
-        const typeSender = typeSend;
-        const transactionSucces = await Transaction.create({
-            receiver,
-            sender,
-            amount,
-            type,
-            typeSender,
-        });
+        const type = typeRecive
+        const typeSender = typeSend
+        const transactionSucces = await Transaction.create({ receiver, sender, amount, type, typeSender })
 
         await Promise.all([
-            User.findByIdAndUpdate(
-                sender,
-                { $addToSet: { historyOfSend: transactionSucces._id } },
-                { new: true }
-            ),
-            User.findByIdAndUpdate(
-                receiver,
-                { $addToSet: { historyOfRecive: transactionSucces._id } },
-                { new: true }
-            ),
-        ]);
+            User.findByIdAndUpdate(sender, { $addToSet: { historyOfSend: transactionSucces._id } }, { new: true }),
+            User.findByIdAndUpdate(receiver, { $addToSet: { historyOfRecive: transactionSucces._id } }, { new: true })
+        ])
 
         res.status(201).json({
             success: true,
             message: "Transacción ejecutada con éxito",
-            transactionSucces,
-        });
+            transactionSucces
+        })
 
         const timeout = setTimeout(async () => {
             try {
-                await Transaction.findByIdAndUpdate(
-                    transactionSucces._id,
-                    { status: "FINALLY" },
-                    { new: true }
-                );
+                await Transaction.findByIdAndUpdate(transactionSucces._id, { status: "FINALLY" }, { new: true })
             } catch (error) {
-                console.log("Error al setear el status");
+                console.log("Error al setear el status")
             }
-        }, 120000);
+        }, 120000)
 
         const interval = setInterval(async () => {
             try {
-                const updatedTransaction = await Transaction.findById(
-                    transactionSucces._id
-                );
+                const updatedTransaction = await Transaction.findById(transactionSucces._id)
                 if (updatedTransaction?.status === "REVERTED") {
-                    clearTimeout(timeout);
-                    clearInterval(interval);
-                    console.log("Timeout cancelado porque la transacción fue revertida");
+                    clearTimeout(timeout)
+                    clearInterval(interval)
+                    console.log("Timeout cancelado porque la transacción fue revertida")
                 }
-            } catch { }
-        }, 5000);
+            } catch {
+                
+            }
+        }, 5000)
+
     } catch (error) {
         res.status(500).json({
             success: false,
             message: "Error al ejecutar la transacción",
-            error: error.message,
-        });
+            error: error.message
+        })
     }
-};
+}
+
 
 export const revertTransaction = async (req, res) => {
     try {
@@ -158,19 +125,16 @@ export const revertTransaction = async (req, res) => {
         const senderWalletId = senderUser.wallet;
         const receiverWalletId = receiverUser.wallet;
 
-        await Transaction.findByIdAndUpdate(
-            uid,
-            { status: "REVERTED" },
-            { new: true }
-        );
+        await Transaction.findByIdAndUpdate(uid, { status: "REVERTED" }, { new: true });
 
-        await Wallet.findByIdAndUpdate(receiverWalletId,{ $inc: { [accountReceiver]: -transaction.amount } },);
+        await Wallet.findByIdAndUpdate(receiverWalletId, { $inc: { [accountReceiver]: -transaction.amount } }, { new: true });
         await Wallet.findByIdAndUpdate(senderWalletId, { $inc: { [accountSender]: transaction.amount } }, { new: true });
 
         return res.status(200).json({
             success: true,
             message: "Transacción revertida con éxito",
         });
+
     } catch (error) {
         return res.status(500).json({
             success: false,
@@ -178,168 +142,4 @@ export const revertTransaction = async (req, res) => {
             error: error.message,
         });
     }
-};
-
-export const getTransactionHistory = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { all } = req.query;
-
-        const user = await User.findById(userId).populate({
-            path: "historyOfSend",
-            select: "-__v",
-            populate: {
-                path: "receiver",
-                select: "name email",
-            },
-            options:
-                all === "true"
-                    ? { sort: { createdAt: -1 } }
-                    : { sort: { createdAt: -1 }, limit: 5 },
-        });
-
-        res.status(200).json({
-            success: true,
-            message:
-                all === "true"
-                    ? "Historial completo de transacciones obtenido correctamente"
-                    : "Últimas 5 transacciones obtenidas correctamente",
-            history: user.historyOfSend,
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al obtener el historial de transacciones",
-            error: error.message,
-        });
-    }
-};
-
-
-export const depositTransaction = async (req, res) => {
-    try {
-        const { receiver, sender, amount, type } = req.body
-        const receiverUser = await User.findById(receiver)
-        const receiverWallet = await Wallet.findById(receiverUser.wallet)
-        const typeSender = "Deposit"
-        const typeOfAccount = {
-            monetary: "noAccountBalance",
-            saving: "savingAccountBalance",
-            foreing: " foreingCurrencyBalance"
-        }
-        const typeAcountSender = typeOfAccount[type]
-
-        await Wallet.findByIdAndUpdate(receiverWallet._id, { [typeAcountSender]: amount }, { new: true })
-        
-        const transactionDeposit = await Transaction.create({ receiver, sender, amount, type, typeSender })
-
-        return res.status(201).json({
-            success: true,
-            message: "Deposito realizado con éxito",
-            transactionDeposit
-        })
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Error al ejecutar el deposito",
-            error: error.message
-        })
-    }
-}
-
-export const updateDepositTransaction = async (req, res) => {
-    try {
-        const { uid } = req.params
-        const { amount } = req.body
-
-        const transaction = await Transaction.findByIdAndUpdate(uid, { amount: amount }, { new: true })
-        res.status(200).json({
-            success: true,
-            message: "Deposito Actualizado con éxito",
-            transaction
-        })
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Error al actualizar el deposito",
-            error: error.message
-        })
-    }
-}
-
-export const updateTransaction = async (req, res) => {
-    try {
-        const { uid } = req.params;
-        const { amount } = req.body;
-
-        const transaction = await Transaction.findById(uid);
-        if (!transaction) {
-            return res.status(404).json({
-                success: false,
-                message: "Transacción no encontrada"
-            });
-        }
-
-        const senderUser = await User.findById(transaction.sender);
-        const receiverUser = await User.findById(transaction.receiver);
-        const senderWallet = await Wallet.findById(senderUser.wallet);
-        const receiverWallet = await Wallet.findById(receiverUser.wallet);
-
-        const typeOfAccountSender = {
-            monetary: "noAccountBalance",
-            saving: "savingAccountBalance",
-            foreing: "foreingCurrencyBalance"
-        };
-
-        const typeOfAccountReceiver = {
-            monetary: "noAccountBalance",
-            saving: "savingAccountBalance",
-            foreing: "foreingCurrencyBalance"
-        };
-
-        const typeAccountSend = typeOfAccountSender[transaction.typeSender];
-        const typeAccountReceiver = typeOfAccountReceiver[transaction.type];
-
-        const difference = amount - transaction.amount;
-
-        if (difference < 0) {
-            if (senderWallet[typeAccountSend] < Math.abs(difference)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "El balance para efectuar la actualización es insuficiente"
-                });
-            }
-            await Promise.all([
-                Wallet.findByIdAndUpdate(receiverWallet._id, { $inc: { [typeAccountReceiver]: -Math.abs(difference) } }, { new: true }),
-                Wallet.findByIdAndUpdate(senderWallet._id, { $inc: { [typeAccountSend]: Math.abs(difference) } }, { new: true }),
-            ]);
-        } else {
-            if (receiverWallet[typeAccountReceiver] < Math.abs(difference)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "El balance para efectuar la actualización es insuficiente"
-                });
-            }
-            await Promise.all([
-                Wallet.findByIdAndUpdate(receiverWallet._id, { $inc: { [typeAccountReceiver]: Math.abs(difference) } }, { new: true }),
-                Wallet.findByIdAndUpdate(senderWallet._id, { $inc: { [typeAccountSend]: -Math.abs(difference) } }, { new: true }),
-            ]);
-        }
-
-        const updatedTransaction = await Transaction.findByIdAndUpdate(uid, { amount: amount }, { new: true });
-
-        return res.status(200).json({
-            success: true,
-            message: "Transacción actualizada con éxito",
-            updatedTransaction
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Error al actualizar la transacción",
-            error: error.message
-        });
-    }
-}
+}; 
