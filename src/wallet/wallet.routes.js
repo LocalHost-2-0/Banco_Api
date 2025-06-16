@@ -76,6 +76,39 @@ router.get("/balances/:userId", getWalltValidator, getAmountMoney);
  */
 router.get("/movements/:userId", getWalltValidator, getMovementsByAccount);
 
+/**
+ * @swagger
+ * /wallet/addFavoriteAccount/{uid}:
+ *   patch:
+ *     summary: Agregar una cuenta a favoritos
+ *     tags: [Wallet]
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la wallet
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               typeAccount:
+ *                 type: string
+ *                 description: Tipo de cuenta a agregar a favoritos (noAccount, savingAccount, foreingCurrency)
+ *     responses:
+ *       200:
+ *         description: Cuenta agregada a favoritos correctamente
+ *       400:
+ *         description: Solicitud incorrecta
+ *       404:
+ *         description: Wallet no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.patch("/addFavoriteAccount/:uid", addFavoriteAccount);
 
 export default router;
