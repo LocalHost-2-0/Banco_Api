@@ -3,9 +3,9 @@ import axios from "axios";
 
 config();
 
-export const convert = async (amount) => {
+export const convert = async (amount, base, target) => {
     const apiKey = process.env.KEY_EXCHANGE;
-    const url = `https://v6.exchangerate-api.com/v6/${apiKey}/pair/GTQ/USD/${amount}`;
+    const url = `https://v6.exchangerate-api.com/v6/${apiKey}/pair/${base}/${target}/${amount}`;
 
     try {
         const response = await axios.get(url);
@@ -16,7 +16,9 @@ export const convert = async (amount) => {
             };
         }
 
-        return response.data.conversion_result;
+        return {
+            result: response.data.conversion_result
+        };
 
     } catch (error) {
         return {
