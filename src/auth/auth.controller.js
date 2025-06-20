@@ -76,7 +76,7 @@ export const login = async (req, res) => {
     };
 
     res.cookie("User", JSON.stringify(userData), {
-      httpOnly: false, // Debe de estar en falso si no se esta utilizando HTTPS
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "Lax",
       maxAge: 60 * 60 * 1000,
@@ -96,3 +96,4 @@ export const login = async (req, res) => {
     });
   }
 };
+
