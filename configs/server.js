@@ -31,7 +31,7 @@ const routes = (app) => {
   app.use("/walletManager/v1/wallet", walletRoutes);
   app.use("/walletManager/v1/product", productRoutes);
   app.use("/walletManager/v1/service", serviceRoutes);
-  app.use("/walletManager/v1/service", transactionRoutes);
+  app.use("/walletManager/v1/transaction", transactionRoutes);
   app.use(
     "/walletManager/v1/docs",
     swaggerUi.serve,
