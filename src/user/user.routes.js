@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { getUserById, getUsers, updatePassword, updateUser, deleteUser } from "./user.controller.js";
-import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator } from "../middlewares/user-validators.js";
+import { getUserById, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
+import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator, addFavoriteValidator, getFavoritesValidator } from "../middlewares/user-validators.js";
 
 const router = Router();
 
@@ -138,5 +138,81 @@ router.patch(
     deleteUserValidator,
     deleteUser
 );
+
+/**
+ * @swagger
+ * /user/getHistoryOfTransactions/{uid}:
+ *   get:
+ *     summary: Obtener historial de transacciones del usuario
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Historial de transacciones obtenido correctamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.get(
+    "/getHistoryOfTransactions/:uid",
+    getHistory
+);
+
+/**
+ * @swagger
+ * /user/addFavorite:
+ *   post:
+ *     summary: Agregar un producto o servicio a favoritos del usuario
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               itemId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Favorito agregado correctamente
+ *       400:
+ *         description: Error de validación
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post('/addFavorite', addFavoriteValidator , addFavorite);
+
+/**
+ * @swagger
+ * /user/Favorites:
+ *   get:
+ *     summary: Obtener los favoritos del usuario
+ *     tags: [User]
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Favoritos obtenidos correctamente
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.get('/Favorites', getFavoritesValidator ,getFavorites);
 
 export default router;

@@ -91,3 +91,19 @@ export const updateUserValidator = [
   validationsFields,
   catchErrors,
 ];
+
+
+export const addFavoriteValidator = [
+  validateJWT,
+  body("accountNumber")
+    .notEmpty()
+    .withMessage("El número de cuenta es requerido"),
+  validationsFields,
+  catchErrors,
+];
+
+export const getFavoritesValidator = [
+  validateJWT,
+  validationsFields,
+  catchErrors,
+];

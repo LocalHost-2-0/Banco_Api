@@ -93,7 +93,10 @@ export const updatePassword = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { uid } = req.params;
-    const data = req.body;
+    const data = { ...req.body };
+
+    if ('dpi' in data) delete data.dpi;
+    if ('password' in data) delete data.password;
 
     const user = await User.findByIdAndUpdate(uid, data, { new: true });
 
@@ -133,4 +136,130 @@ export const deleteUser = async (req, res) => {
       error: err.message,
     });
   }
+};
+
+export const getHistory = async (req, res) => {
+  try {
+    const { limite = 5, desde = 0 } = req.query;
+    const query = { status: true };
+
+    const [total, users] = await Promise.all([
+      User.countDocuments(query),
+      User.find(query)
+        .skip(Number(desde))
+        .limit(Number(limite))
+        .select("historyOfSend historyOfReceive"),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      total,
+      users,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener los usuarios",
+      error: err.message,
+    });
+  }
+};
+
+
+export const addFavorite = async (req, res) => {
+    try {
+ 
+        const userId = req.usuario._id || req.usuario.uid
+        
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "ID de usuario no proporcionado",
+            })
+        }
+
+        const { accountNumber } = req.body;
+        if (!accountNumber) {
+            return res.status(400).json({
+                success: false,
+                message: "El número de cuenta es requerido",
+            })
+        }
+
+        const user = await User.findById(userId)
+        console.log('Usuario encontrado:', user)
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario autenticado no encontrado en la base de datos",
+            })
+        }
+        const favoriteUser = await User.findOne({ numberAccount: accountNumber });
+        if (!favoriteUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario con ese número de cuenta no encontrado",
+            })
+        }
+
+        if (user._id.equals(favoriteUser._id)) {
+            return res.status(400).json({
+                success: false,
+                message: "No puedes agregarte a ti mismo como favorito",
+            })
+        }
+
+        if (user.favorites.includes(favoriteUser._id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Este usuario ya está en tus favoritos",
+            })
+        }
+
+        user.favorites.push(favoriteUser._id);
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Usuario agregado a favoritos",
+            favorites: user.favorites,
+        })
+
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al agregar favorito",
+            error: err.message,
+        })
+    }
+}
+
+
+
+export const getFavorites = async (req, res) => {
+    try {
+      
+        const userId = req.usuario._id || req.usuario.uid
+
+        const user = await User.findById(userId).populate('favorites', 'name userName numberAccount email');
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario no encontrado",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            favorites: user.favorites,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al obtener favoritos",
+            error: err.message,
+        });
+    }
 };
