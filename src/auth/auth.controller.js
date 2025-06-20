@@ -21,7 +21,7 @@ export const register = async (req, res) => {
       "auth",
       { token, role: user.role },
       {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         maxAge: 60 * 60 * 1000,
@@ -69,16 +69,18 @@ export const login = async (req, res) => {
 
     const token = await generateJWT(user.id);
 
-    res.cookie(
-      "auth",
-      { token, role: user.role },
-      {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 60 * 60 * 1000,
-      }
-    );
+    const userData = {
+      id: user._id,
+      userName: user.userName,
+      token: token,
+    };
+
+    res.cookie("User", JSON.stringify(userData), {
+      httpOnly: false, // Debe de estar en falso si no se esta utilizando HTTPS
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+      maxAge: 60 * 60 * 1000,
+    });
 
     return res.status(200).json({
       message: "Login succeful",
