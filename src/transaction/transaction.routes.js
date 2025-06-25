@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTransaction, revertTransaction , depositTransaction, updateDepositTransaction, updateTransaction} from "./transaction.controller.js";
+import { createTransaction, revertTransaction , getTransacionHistory,depositTransaction, updateDepositTransaction, updateTransaction} from "./transaction.controller.js";
 import { createTransactionValidator } from "../middlewares/transaction-validator.js";
 
 const router = Router()
@@ -165,6 +165,11 @@ router.patch(
 router.patch(
     "/updateTransaction/:uid",
     updateTransaction
+)
+
+router.get(
+    "/getTransacionHistory/:uid",
+    getTransacionHistory
 )
 
 export default router

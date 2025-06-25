@@ -61,7 +61,7 @@ export const createTransaction = async (req, res) => {
             flag = true
             quetzalToDollar = true
             incrementAmount = parseInt(conversion_result.result)
-            decrementAmount = amount 
+            decrementAmount = amount
         }
 
         if (
@@ -194,42 +194,27 @@ export const revertTransaction = async (req, res) => {
             error: error.message,
         });
     }
-}; 
+};
 
-export const getTransactionHistory = async (req, res) => {
+export const getTransacionHistory = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const { all } = req.query;
+        const {uid} = req.params;
+        const user = await User.findById(uid).select("historyOfRecive historyOfSend")
+        
 
-        const user = await User.findById(userId).populate({
-            path: "historyOfSend",
-            select: "-__v",
-            populate: {
-                path: "receiver",
-                select: "name email",
-            },
-            options:
-                all === "true"
-                    ? { sort: { createdAt: -1 } }
-                    : { sort: { createdAt: -1 }, limit: 5 },
-        });
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            message:
-                all === "true"
-                    ? "Historial completo de transacciones obtenido correctamente"
-                    : "Últimas 5 transacciones obtenidas correctamente",
-            history: user.historyOfSend,
+            user
         });
-    } catch (error) {
-        res.status(500).json({
+
+    } catch (err) {
+        return res.status(500).json({
             success: false,
-            message: "Error al obtener el historial de transacciones",
-            error: error.message,
+            message: "Error al obtener los usuarios",
+            error: err.message,
         });
     }
-};
+}
 
 
 export const depositTransaction = async (req, res) => {
@@ -246,7 +231,7 @@ export const depositTransaction = async (req, res) => {
         const typeAcountSender = typeOfAccount[type]
 
         await Wallet.findByIdAndUpdate(receiverWallet._id, { [typeAcountSender]: amount }, { new: true })
-        
+
         const transactionDeposit = await Transaction.create({ receiver, sender, amount, type, typeSender })
 
         return res.status(201).json({
