@@ -198,19 +198,27 @@ export const revertTransaction = async (req, res) => {
 
 export const getTransacionHistory = async (req, res) => {
     try {
-        const {uid} = req.params;
-        const user = await User.findById(uid).select("historyOfRecive historyOfSend")
-        
+        const { limite = 5, desde = 0 } = req.query;
+        const query = { status: true };
+
+        const total = await User.countDocuments(query);
+
+        const users = await User.find(query)
+            .skip(Number(desde))
+            .limit(Number(limite))
+            .populate('historyOfSend')
+            .populate('historyOfRecive')
+            .select('historyOfSend historyOfRecive name userName email');
 
         return res.status(200).json({
             success: true,
-            user
+            total,
+            users,
         });
-
     } catch (err) {
         return res.status(500).json({
             success: false,
-            message: "Error al obtener los usuarios",
+            message: "Error al obtener usuarios con detalles de transacciones",
             error: err.message,
         });
     }

@@ -47,14 +47,14 @@ const userSchema = Schema({
         enum: ["ADMIN_ROLE", "CLIENT_ROLE"],
         default: "CLIENT_ROLE"
     },
-    historyOfSend:[{
+    historyOfSend: [{
         type: Schema.Types.ObjectId,
-        ref: "Wallet",
+        ref: "Transaction",
         default: []
     }],
-    historyOfRecive:[{
+    historyOfRecive: [{
         type: Schema.Types.ObjectId,
-        ref: "Wallet",
+        ref: "Transaction",
         default: []
     }],
     wallet: {
@@ -72,17 +72,17 @@ const userSchema = Schema({
         default: []
     }],
     products: [{
-    type: Schema.Types.ObjectId,
-    ref: "Product",
-    default: []
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+        default: []
     }],
-    
+
     services: [{
-    type: Schema.Types.ObjectId,
-    ref: "Service",
-    default: []
-}],
-    
+        type: Schema.Types.ObjectId,
+        ref: "Service",
+        default: []
+    }],
+
 
 },
     {
