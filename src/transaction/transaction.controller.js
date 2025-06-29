@@ -61,7 +61,7 @@ export const createTransaction = async (req, res) => {
             flag = true
             quetzalToDollar = true
             incrementAmount = parseInt(conversion_result.result)
-            decrementAmount = amount 
+            decrementAmount = amount
         }
 
         if (
@@ -194,42 +194,35 @@ export const revertTransaction = async (req, res) => {
             error: error.message,
         });
     }
-}; 
+};
 
-export const getTransactionHistory = async (req, res) => {
+export const getTransacionHistory = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const { all } = req.query;
+        const { limite = 5, desde = 0 } = req.query;
+        const query = { status: true };
 
-        const user = await User.findById(userId).populate({
-            path: "historyOfSend",
-            select: "-__v",
-            populate: {
-                path: "receiver",
-                select: "name email",
-            },
-            options:
-                all === "true"
-                    ? { sort: { createdAt: -1 } }
-                    : { sort: { createdAt: -1 }, limit: 5 },
-        });
+        const total = await User.countDocuments(query);
 
-        res.status(200).json({
+        const users = await User.find(query)
+            .skip(Number(desde))
+            .limit(Number(limite))
+            .populate('historyOfSend')
+            .populate('historyOfRecive')
+            .select('historyOfSend historyOfRecive name userName email');
+
+        return res.status(200).json({
             success: true,
-            message:
-                all === "true"
-                    ? "Historial completo de transacciones obtenido correctamente"
-                    : "Últimas 5 transacciones obtenidas correctamente",
-            history: user.historyOfSend,
+            total,
+            users,
         });
-    } catch (error) {
-        res.status(500).json({
+    } catch (err) {
+        return res.status(500).json({
             success: false,
-            message: "Error al obtener el historial de transacciones",
-            error: error.message,
+            message: "Error al obtener usuarios con detalles de transacciones",
+            error: err.message,
         });
     }
-};
+}
 
 
 export const depositTransaction = async (req, res) => {
@@ -246,7 +239,7 @@ export const depositTransaction = async (req, res) => {
         const typeAcountSender = typeOfAccount[type]
 
         await Wallet.findByIdAndUpdate(receiverWallet._id, { [typeAcountSender]: amount }, { new: true })
-        
+
         const transactionDeposit = await Transaction.create({ receiver, sender, amount, type, typeSender })
 
         return res.status(201).json({
