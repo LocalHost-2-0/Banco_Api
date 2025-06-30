@@ -128,6 +128,38 @@
 					"response": []
 				},
 				{
+					"name": "Get Balance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/getBalance/:uid",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"user",
+								"getBalance",
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": "6848c1e79891c6cda01fc2ff"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get History",
 					"request": {
 						"method": "GET",
@@ -432,6 +464,38 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Balance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:3005/walletManager/v1/user/getBalance/:uid",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3005",
+							"path": [
+								"walletManager",
+								"v1",
+								"user",
+								"getBalance",
+								":uid"
+							],
+							"variable": [
+								{
+									"key": "uid",
+									"value": "6848c1e79891c6cda01fc2ff"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -535,7 +599,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2ODQ4YzFlNzk4OTFjNmNkYTAxZmMyZmYiLCJpYXQiOjE3NTEyMzk2NTUsImV4cCI6MTc1MTI0MzI1NX0.nu5wd3jqRo3rmNFVLPo093vEhXJUsqZ6mNGyQZXNWO4",
 									"type": "string"
 								}
 							]
@@ -544,7 +608,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"receiver\": \"6841081fc990836df7f396bc\", // Id de usuario (no wallet)\r\n  \"sender\": \"6848c1e79891c6cda01fc2ff\", //Id de usuario (no wallet)\r\n  \"amount\": 300,\r\n  \"typeSend\": \"monetary\",\r\n  \"typeRecive\": \"foreing\"\r\n}\r\n",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -571,7 +635,7 @@
 							"variable": [
 								{
 									"key": "uid",
-									"value": "6848c1e79891c6cda01fc2ff"
+									"value": "6841081fc990836df7f396bc"
 								}
 							]
 						}
@@ -730,60 +794,6 @@
 								{
 									"key": "uid",
 									"value": "684db7537cd6ea20607eba71"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get Transaction",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"receiver\": \"6841081fc990836df7f396bc\", // Id de usuario (no wallet)\r\n  \"sender\": \"6848c1e79891c6cda01fc2ff\", //Id de usuario (no wallet)\r\n  \"amount\": 300,\r\n  \"typeSend\": \"monetary\",\r\n  \"typeRecive\": \"foreing\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:3005/walletManager/v1/transaction/getTransacionHistory/:uid",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "3005",
-							"path": [
-								"walletManager",
-								"v1",
-								"transaction",
-								"getTransacionHistory",
-								":uid"
-							],
-							"variable": [
-								{
-									"key": "uid",
-									"value": "6848c1e79891c6cda01fc2ff"
 								}
 							]
 						}

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUserById, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
+import { getUserById,getBalance, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
 import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator, addFavoriteValidator, getFavoritesValidator } from "../middlewares/user-validators.js";
 
 const router = Router();
@@ -214,5 +214,10 @@ router.post('/addFavorite', addFavoriteValidator , addFavorite);
  *         description: Usuario no encontrado
  */
 router.get('/Favorites', getFavoritesValidator ,getFavorites);
+
+router.get(
+    "/getBalance/:uid",
+    getBalance
+)
 
 export default router;
