@@ -11,12 +11,16 @@ const serviceSchema = Schema({
     },
     price: {
         type: Number,
-        required: [true, "Service price is required"],
         default: 0
     },
     status: {
         type: Boolean,
         default: true
+    },
+    type: {
+        type: String,
+        enum: ["Servicios_Basicos", "Educacion", "Instituciones","Apoyo_Externo"],
+        default: "Apoyo_Externo"
     },
     image: {
         type: String
