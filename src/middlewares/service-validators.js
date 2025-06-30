@@ -16,11 +16,6 @@ export const addServiceValidator = [
     body("description")
         .notEmpty()
         .withMessage("Service description is required"),
-    body("price")
-        .notEmpty()
-        .withMessage("Service price is required")
-        .isNumeric()
-        .withMessage("Service price must be a number"),
     validationsFields,
     catchErrors
 ]

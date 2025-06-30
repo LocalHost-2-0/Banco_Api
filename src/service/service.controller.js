@@ -18,7 +18,8 @@ export const getServices = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Services retrieved successfully",
-            services
+            services,
+            serviceIds: services.map(service => service.id)
         });
 
     } catch (error) {
