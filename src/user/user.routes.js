@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUserById,getBalance, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
+import { getUserById, getWallet , getBalance, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
 import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator, addFavoriteValidator, getFavoritesValidator } from "../middlewares/user-validators.js";
 
 const router = Router();
@@ -218,6 +218,11 @@ router.get('/Favorites', getFavoritesValidator ,getFavorites);
 router.get(
     "/getBalance/:uid",
     getBalance
+)
+
+router.get(
+    "/getWallet/:uid",
+    getWallet
 )
 
 export default router;
