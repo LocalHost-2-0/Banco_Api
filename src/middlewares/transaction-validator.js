@@ -5,8 +5,7 @@ import { validationsFields } from "./fields-validator.js";
 import { validateTransactionDayLimit } from "../helpers/transaction-limitator.js";
 
 export const createTransactionValidator = [
-    body("receiver").isMongoId().withMessage("No es un id Válido"),
-    body("receiver").custom(uidExist),
+    body("receiver").notEmpty().withMessage("El campo receptor es obligatorio"),
     body("sender").isMongoId().withMessage("No es un id Válido"),
     body("sender").custom(uidExist),
     body("amount").isFloat({min: 1, max: 2000}).withMessage("El monto debe estar entre el rango de 1 a 2000"),

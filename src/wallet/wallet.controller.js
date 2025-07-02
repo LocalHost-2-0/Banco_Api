@@ -14,9 +14,9 @@ export const createAccount = async (req, res) => {
     data.foreingCurrency = foreign;
 
     const wallet = await Wallet.create(data);
-    const user = await User.findByIdAndUpdate(data.user,{ wallet: wallet._id },{ new: true });
+    const user = await User.findByIdAndUpdate(data.user, { wallet: wallet._id }, { new: true });
     const balance = await User.findById(data.user);
-    await Wallet.findByIdAndUpdate(wallet._id, {$inc: { noAccountBalance: balance.monthEarnings },});
+    await Wallet.findByIdAndUpdate(wallet._id, { $inc: { noAccountBalance: balance.monthEarnings }, });
 
     return res.status(200).json({
       success: true,
@@ -199,29 +199,54 @@ export const getMovementsByAccount = async (req, res) => {
 export const addFavoriteAccount = async (req, res) => {
   try {
     const { typeAccount } = req.body;
-    const { uid } = req.body;
+    const { uid } = req.params;
+
     const wallet = await Wallet.findById(uid);
 
     const accounts = {
       noAccount: wallet.noAccount,
       savingAccount: wallet.savingAccount,
       foreingCurrency: wallet.foreingCurrency
-    }
+    };
+
     const account = accounts[typeAccount];
 
+    if (!account) {
+      return res.status(400).json({
+        success: false,
+        message: "Tipo de cuenta inválido"
+      });
+    }
 
-    const accountFav = await Wallet.findByIdAndUpdate(uid, { $addToSet: { favoriteAccount: account } }, { new: true })
+    const isAlreadyFavorite = wallet.favoriteAccount.includes(account);
+    let updatedWallet;
+
+    if (isAlreadyFavorite) {
+      updatedWallet = await Wallet.findByIdAndUpdate(
+        uid,
+        { $pull: { favoriteAccount: account } },
+        { new: true }
+      );
+    } else {
+      updatedWallet = await Wallet.findByIdAndUpdate(
+        uid,
+        { $addToSet: { favoriteAccount: account } },
+        { new: true }
+      );
+    }
 
     return res.status(200).json({
       success: true,
-      message: "La cuenta se ha agregado a favoritos exitosamente",
-      accountFav
-    })
+      message: isAlreadyFavorite
+        ? "Cuenta removida de favoritos"
+        : "Cuenta agregada a favoritos",
+      accountFav: updatedWallet
+    });
 
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "No se ha podido agregar la cuenta a favoritos"
-    })
+      message: "No se pudo modificar favoritos"
+    });
   }
-}
+};

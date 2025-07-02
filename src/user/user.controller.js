@@ -1,4 +1,5 @@
 import User from "./user.model.js";
+import Wallet from "../wallet/wallet.model.js"
 import argon2 from "argon2";
 
 export const getUserById = async (req, res) => {
@@ -168,14 +169,13 @@ export const getHistory = async (req, res) => {
 
 export const addFavorite = async (req, res) => {
   try {
-
-    const userId = req.usuario._id || req.usuario.uid
+    const { userId } = req.body
 
     if (!userId) {
       return res.status(400).json({
         success: false,
         message: "ID de usuario no proporcionado",
-      })
+      });
     }
 
     const { accountNumber } = req.body;
@@ -183,59 +183,68 @@ export const addFavorite = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "El número de cuenta es requerido",
-      })
+      });
     }
 
-    const user = await User.findById(userId)
-    console.log('Usuario encontrado:', user)
-
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "Usuario autenticado no encontrado en la base de datos",
-      })
+      });
     }
-    const favoriteUser = await User.findOne({ numberAccount: accountNumber });
+
+    const favoriteUser = await Wallet.findOne({
+      $or: [
+        { noAccount: accountNumber },
+        { savingAccount: accountNumber },
+        { foreingCurrencyAccount: accountNumber }
+      ]
+    });
     if (!favoriteUser) {
       return res.status(404).json({
         success: false,
         message: "Usuario con ese número de cuenta no encontrado",
-      })
+      });
     }
 
     if (user._id.equals(favoriteUser._id)) {
       return res.status(400).json({
         success: false,
         message: "No puedes agregarte a ti mismo como favorito",
-      })
+      });
     }
 
-    if (user.favorites.includes(favoriteUser._id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Este usuario ya está en tus favoritos",
-      })
+    const isFavorite = user.favorites.includes(favoriteUser._id);
+
+    if (isFavorite) {
+      user.favorites = user.favorites.filter(id => !id.equals(favoriteUser._id));
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Usuario eliminado de favoritos",
+        favorites: user.favorites,
+      });
+    } else {
+      user.favorites.push(favoriteUser._id);
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Usuario agregado a favoritos",
+        favorites: user.favorites,
+      });
     }
-
-    user.favorites.push(favoriteUser._id);
-    await user.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Usuario agregado a favoritos",
-      favorites: user.favorites,
-    })
 
   } catch (err) {
     return res.status(500).json({
       success: false,
-      message: "Error al agregar favorito",
+      message: "Error al modificar favoritos",
       error: err.message,
-    })
+    });
   }
-}
-
-
+};
 
 export const getFavorites = async (req, res) => {
   try {
@@ -276,6 +285,25 @@ export const getBalance = async (req, res) => {
         savingAccountBalance: user.wallet.savingAccountBalance,
         foreingCurrencyBalance: user.wallet.foreingCurrencyBalance
       }
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener los usuarios",
+      error: err.message,
+    });
+  }
+};
+
+export const getWallet = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const user = await User.findById(uid).select("wallet").populate("wallet");
+
+    return res.status(200).json({
+      success: true,
+      wallet: user
     });
 
   } catch (err) {
