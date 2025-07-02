@@ -149,7 +149,10 @@ export const getHistory = async (req, res) => {
       User.find(query)
         .skip(Number(desde))
         .limit(Number(limite))
-        .select("historyOfSend historyOfReceive"),
+        .select("historyOfSend historyOfReceive")
+        .populate('historyOfSend')
+        .populate('historyOfRecive')
+        .select('historyOfSend historyOfRecive name userName email')
     ]);
 
     return res.status(200).json({
