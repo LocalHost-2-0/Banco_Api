@@ -5,7 +5,6 @@ import Wallet from "../wallet/wallet.model.js";
 import { validateTransactionDayLimit } from "../helpers/transaction-limitator.js";
 import { convert } from "../converter/converter.controller.js";
 
-// Función auxiliar para buscar receptor por ID, correo o número de cuenta
 const findReceiverUser = async (receiver) => {
     if (mongoose.Types.ObjectId.isValid(receiver)) {
         const user = await User.findById(receiver);
@@ -130,7 +129,6 @@ export const createTransaction = async (req, res) => {
             transactionSucces
         });
 
-        // Cambio de estado automático a FINALLY luego de 2 minutos
         const timeout = setTimeout(async () => {
             try {
                 await Transaction.findByIdAndUpdate(transactionSucces._id, { status: "FINALLY" });
@@ -139,7 +137,6 @@ export const createTransaction = async (req, res) => {
             }
         }, 120000);
 
-        // Cancelar timeout si se revierte la transacción
         const interval = setInterval(async () => {
             try {
                 const updated = await Transaction.findById(transactionSucces._id);
@@ -147,7 +144,7 @@ export const createTransaction = async (req, res) => {
                     clearTimeout(timeout);
                     clearInterval(interval);
                 }
-            } catch {}
+            } catch { }
         }, 5000);
 
     } catch (error) {
@@ -255,34 +252,94 @@ export const getTransacionHistory = async (req, res) => {
 
 export const depositTransaction = async (req, res) => {
     try {
-        const { receiver, sender, amount, type } = req.body
-        const receiverUser = await User.findById(receiver)
-        const receiverWallet = await Wallet.findById(receiverUser.wallet)
-        const typeSender = "Deposit"
+        const { receiver, sender, amount, type } = req.body;
+
+        const findReceiverUser = async (receiver) => {
+            if (mongoose.Types.ObjectId.isValid(receiver)) {
+                const user = await User.findById(receiver);
+                if (user) return user;
+            }
+
+            if (typeof receiver === "string" && receiver.includes("@")) {
+                const user = await User.findOne({ email: receiver });
+                if (user) return user;
+            }
+
+            const accountNumber = Number(receiver);
+            if (!isNaN(accountNumber)) {
+                const wallet = await Wallet.findOne({
+                    $or: [
+                        { noAccount: accountNumber },
+                        { savingAccount: accountNumber },
+                        { foreingCurrency: accountNumber }
+                    ]
+                });
+
+                if (wallet) {
+                    const user = await User.findOne({ wallet: wallet._id });
+                    if (user) return user;
+                }
+            }
+
+            return null;
+        };
+
+        const receiverUser = await findReceiverUser(receiver);
+        if (!receiverUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario receptor no encontrado",
+            });
+        }
+
+        const receiverWallet = await Wallet.findById(receiverUser.wallet);
+        if (!receiverWallet) {
+            return res.status(404).json({
+                success: false,
+                message: "Wallet del receptor no encontrada",
+            });
+        }
+
+        const typeSender = "Deposit";
         const typeOfAccount = {
             monetary: "noAccountBalance",
             saving: "savingAccountBalance",
-            foreing: " foreingCurrencyBalance"
+            foreing: "foreingCurrencyBalance",
+        };
+
+        const typeAcountField = typeOfAccount[type];
+        if (!typeAcountField) {
+            return res.status(400).json({
+                success: false,
+                message: "Tipo de cuenta inválido",
+            });
         }
-        const typeAcountSender = typeOfAccount[type]
 
-        await Wallet.findByIdAndUpdate(receiverWallet._id, { [typeAcountSender]: amount }, { new: true })
+        await Wallet.findByIdAndUpdate(receiverWallet._id, { $inc: { [typeAcountField]: amount } }, { new: true });
 
-        const transactionDeposit = await Transaction.create({ receiver, sender, amount, type, typeSender })
+        const transactionDeposit = await Transaction.create({
+            receiver: receiverUser._id, 
+            sender,
+            amount,
+            type,
+            typeSender,
+        });
+
+        await User.findByIdAndUpdate(receiverUser._id, { $addToSet: { historyOfRecive: transactionDeposit._id } });
 
         return res.status(201).json({
             success: true,
             message: "Deposito realizado con éxito",
-            transactionDeposit
-        })
+            transactionDeposit,
+        });
     } catch (error) {
         return res.status(500).json({
             success: false,
             message: "Error al ejecutar el deposito",
-            error: error.message
-        })
+            error: error.message,
+        });
     }
-}
+};
 
 export const updateDepositTransaction = async (req, res) => {
     try {
