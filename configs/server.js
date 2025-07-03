@@ -13,6 +13,7 @@ import productRoutes from "../src/product/product.routes.js"
 import serviceRoutes from "../src/service/service.routes.js"
 import { swaggerDocs, swaggerUi } from "./swagger.js";
 import transactionRoutes from "../src/transaction/transaction.routes.js"
+import { userSeeder } from "../src/seeders/user.seeder.js";
 
 const middlewares = (app) => {
   app.use(express.urlencoded({ extended: false }));
@@ -51,6 +52,7 @@ export const initServer = () => {
   const app = express();
   const timeInit = Date.now();
   try {
+    userSeeder()
     middlewares(app);
     connectionMongo();
     routes(app);
