@@ -16,7 +16,7 @@ export const createAccount = async (req, res) => {
     const wallet = await Wallet.create(data);
     const user = await User.findByIdAndUpdate(data.user, { wallet: wallet._id }, { new: true });
     const balance = await User.findById(data.user);
-    await Wallet.findByIdAndUpdate(wallet._id, { $inc: { noAccountBalance: balance.monthEarnings }, });
+    await Wallet.findByIdAndUpdate(wallet._id, { $inc: { noAccountBalance: 0 }, });
 
     return res.status(200).json({
       success: true,
@@ -102,7 +102,6 @@ export const numberVerificationAccount = async (type) => {
   }
 };
 
-// See amount of money in the wallet
 export const getAmountMoney = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -139,7 +138,6 @@ export const getAmountMoney = async (req, res) => {
   }
 };
 
-// Movements of accounts ordet by biggest to smallest
 export const getMovementsByAccount = async (req, res) => {
   try {
     const { userId } = req.params;
