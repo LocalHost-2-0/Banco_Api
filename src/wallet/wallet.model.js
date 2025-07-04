@@ -44,6 +44,10 @@ const walletSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "Usuario",
     },
+    service: {
+      type: Schema.Types.ObjectId,
+      ref: "Service",
+    },
     favoriteAccount:[{
         type: Number
     }],
@@ -54,7 +58,7 @@ const walletSchema = Schema(
   },
   {
     versionKey: false,
-    timeStamps: true,
+    timestamps: true,
   }
 );
 

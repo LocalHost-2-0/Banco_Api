@@ -14,15 +14,9 @@ export const createAccount = async (req, res) => {
     data.foreingCurrency = foreign;
 
     const wallet = await Wallet.create(data);
-    const user = await User.findByIdAndUpdate(
-      data.user,
-      { wallet: wallet._id },
-      { new: true }
-    );
+    const user = await User.findByIdAndUpdate(data.user, { wallet: wallet._id }, { new: true });
     const balance = await User.findById(data.user);
-    await Wallet.findByIdAndUpdate(data._id, {
-      $inc: { noAccountBalance: balance.monthEarnings },
-    });
+    await Wallet.findByIdAndUpdate(wallet._id, { $inc: { noAccountBalance: 0 }, });
 
     return res.status(200).json({
       success: true,
@@ -108,7 +102,6 @@ export const numberVerificationAccount = async (type) => {
   }
 };
 
-// See amount of money in the wallet
 export const getAmountMoney = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -145,7 +138,6 @@ export const getAmountMoney = async (req, res) => {
   }
 };
 
-// Movements of accounts ordet by biggest to smallest
 export const getMovementsByAccount = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -202,32 +194,57 @@ export const getMovementsByAccount = async (req, res) => {
 };
 
 
-export const addFavoriteAccount = async(req,res) =>{
-    try{
-        const {typeAccount} = req.body;
-        const {uid} = req.body;
-        const wallet = await  Wallet.findById(uid);
+export const addFavoriteAccount = async (req, res) => {
+  try {
+    const { typeAccount } = req.body;
+    const { uid } = req.params;
 
-        const accounts = {
-            noAccount: wallet.noAccount,
-            savingAccount: wallet.savingAccount,
-            foreingCurrency: wallet.foreingCurrency
-        }
-        const account = accounts[typeAccount];
+    const wallet = await Wallet.findById(uid);
 
+    const accounts = {
+      noAccount: wallet.noAccount,
+      savingAccount: wallet.savingAccount,
+      foreingCurrency: wallet.foreingCurrency
+    };
 
-        const accountFav = await Wallet.findByIdAndUpdate(uid, {$addToSet: {favoriteAccount: account}}, {new: true})
+    const account = accounts[typeAccount];
 
-        return res.status(200).json({
-            success: true,
-            message: "La cuenta se ha agregado a favoritos exitosamente",
-            accountFav
-        })
-
-    }catch(error){
-        return res.status(500).json({
-            success: false,
-            message: "No se ha podido agregar la cuenta a favoritos"
-        })
+    if (!account) {
+      return res.status(400).json({
+        success: false,
+        message: "Tipo de cuenta inválido"
+      });
     }
-}
+
+    const isAlreadyFavorite = wallet.favoriteAccount.includes(account);
+    let updatedWallet;
+
+    if (isAlreadyFavorite) {
+      updatedWallet = await Wallet.findByIdAndUpdate(
+        uid,
+        { $pull: { favoriteAccount: account } },
+        { new: true }
+      );
+    } else {
+      updatedWallet = await Wallet.findByIdAndUpdate(
+        uid,
+        { $addToSet: { favoriteAccount: account } },
+        { new: true }
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: isAlreadyFavorite
+        ? "Cuenta removida de favoritos"
+        : "Cuenta agregada a favoritos",
+      accountFav: updatedWallet
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "No se pudo modificar favoritos"
+    });
+  }
+};

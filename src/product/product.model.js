@@ -16,7 +16,7 @@ const productSchema = Schema({
     },
     category: {
         type: String,
-        enum: ["Electrodomesticos", "Ropa", "Juguetes", "Tecnologia", "Hogar"],
+        enum: ["SEGUROS", "TARJETA", "PLANES", "PRESTAMOS", "PROMOCION"],
         required: [true, "Product category is required"]
     },
     stock: {

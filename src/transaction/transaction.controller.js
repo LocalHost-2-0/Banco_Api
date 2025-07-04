@@ -1,125 +1,158 @@
+import mongoose from "mongoose";
 import Transaction from "./transaction.model.js";
 import User from "../user/user.model.js";
 import Wallet from "../wallet/wallet.model.js";
 import { validateTransactionDayLimit } from "../helpers/transaction-limitator.js";
+import { convert } from "../converter/converter.controller.js";
+
+const findReceiverUser = async (receiver) => {
+    if (mongoose.Types.ObjectId.isValid(receiver)) {
+        const user = await User.findById(receiver);
+        if (user) return user;
+    }
+
+    if (typeof receiver === "string" && receiver.includes("@")) {
+        const user = await User.findOne({ email: receiver });
+        if (user) return user;
+    }
+
+    const accountNumber = Number(receiver);
+    if (!isNaN(accountNumber)) {
+        const wallet = await Wallet.findOne({
+            $or: [
+                { noAccount: accountNumber },
+                { savingAccount: accountNumber },
+                { foreingCurrency: accountNumber }
+            ]
+        });
+
+        if (wallet) {
+            const user = await User.findOne({ wallet: wallet._id });
+            if (user) return user;
+        }
+    }
+
+    return null;
+};
 
 export const createTransaction = async (req, res) => {
     try {
-        const { receiver, sender, amount, typeSend, typeRecive } = req.body;
+        const { receiver, sender, amount, typeSend, typeRecive, note = "" } = req.body;
 
-        const typeOfAccountSender = {
-            monetary: "noAccountBalance",
-            saving: "savingAccountBalance",
-            foreing: "foreingCurrencyBalance",
-        };
-        const typeOfAccountReceiver = {
-            monetary: "noAccountBalance",
-            saving: "savingAccountBalance",
-            foreing: "foreingCurrencyBalance",
-        };
-        const typeAccountSend = typeOfAccountSender[typeSend];
-        const typeAccountReceiver = typeOfAccountReceiver[typeRecive];
+        const numericAmount = Number(amount);
+        if (!receiver || !sender || !typeSend || !typeRecive || isNaN(numericAmount) || numericAmount <= 0) {
+            return res.status(400).json({ success: false, message: "Datos inválidos para realizar la transacción" });
+        }
 
-        const receiverUser = await User.findById(receiver);
+        const receiverUser = await findReceiverUser(receiver);
         const senderUser = await User.findById(sender);
 
-        const validator = await Wallet.findById(senderUser.wallet);
-        if (validator[typeAccountSend] < amount) {
-            return res.status(500).json({
+        if (!receiverUser || !senderUser) {
+            return res.status(404).json({ success: false, message: "Emisor o receptor no encontrado" });
+        }
+
+        const senderWallet = await Wallet.findById(senderUser.wallet);
+        const receiverWallet = await Wallet.findById(receiverUser.wallet);
+
+        const accountMap = {
+            monetary: "noAccountBalance",
+            saving: "savingAccountBalance",
+            foreing: "foreingCurrencyBalance"
+        };
+
+        const typeAccountSend = accountMap[typeSend];
+        const typeAccountReceiver = accountMap[typeRecive];
+
+        if (senderWallet[typeAccountSend] < numericAmount) {
+            return res.status(400).json({
                 success: false,
-                message: "El balance para efectuar la transacción es insuficiente",
+                message: "Saldo insuficiente para realizar la transacción"
             });
         }
 
         try {
-            await validateTransactionDayLimit(sender);
-        } catch (error) {
-            return res.status(500).json({
+            await validateTransactionDayLimit(senderUser._id);
+        } catch (err) {
+            return res.status(400).json({
                 success: false,
-                message: "Error al ejecutar la transacción, limite diario alcanzado",
+                message: "Límite diario alcanzado"
             });
         }
 
+        let incrementAmount = numericAmount;
+        let decrementAmount = numericAmount;
+
+        if (typeAccountSend === "foreingCurrencyBalance" && typeAccountReceiver !== "foreingCurrencyBalance") {
+            const conversion = await convert(numericAmount, "USD", "GTQ");
+            if (conversion.error) {
+                return res.status(500).json({ success: false, message: "Error al convertir de USD a GTQ" });
+            }
+            incrementAmount = parseInt(conversion.result);
+        }
+
+        if (typeAccountReceiver === "foreingCurrencyBalance" && typeAccountSend !== "foreingCurrencyBalance") {
+            const conversion = await convert(numericAmount, "GTQ", "USD");
+            if (conversion.error) {
+                return res.status(500).json({ success: false, message: "Error al convertir de GTQ a USD" });
+            }
+            incrementAmount = parseInt(conversion.result);
+        }
+
         await Promise.all([
-            Wallet.findByIdAndUpdate(
-                receiverUser.wallet,
-                { $inc: { [typeAccountReceiver]: amount } },
-                { new: true }
-            ),
-            Wallet.findByIdAndUpdate(
-                senderUser.wallet,
-                { $inc: { [typeAccountSend]: -amount } },
-                { new: true }
-            ),
-            Wallet.findByIdAndUpdate(
-                senderUser.wallet,
-                {
-                    $inc: {
-                        [`${typeSend}AccountMovements`]: 1,
-                    },
-                },
-                { new: true }
-            ),
+            Wallet.findByIdAndUpdate(receiverWallet._id, {
+                $inc: { [typeAccountReceiver]: incrementAmount }
+            }),
+            Wallet.findByIdAndUpdate(senderWallet._id, {
+                $inc: { [typeAccountSend]: -decrementAmount }
+            })
         ]);
 
-        const type = typeRecive;
-        const typeSender = typeSend;
         const transactionSucces = await Transaction.create({
-            receiver,
-            sender,
-            amount,
-            type,
-            typeSender,
+            receiver: receiverUser._id,
+            sender: senderUser._id,
+            amount: numericAmount,
+            type: typeRecive,
+            typeSender: typeSend,
+            note,
+            status: "SUCCESS",
+            date: new Date()
         });
 
         await Promise.all([
-            User.findByIdAndUpdate(
-                sender,
-                { $addToSet: { historyOfSend: transactionSucces._id } },
-                { new: true }
-            ),
-            User.findByIdAndUpdate(
-                receiver,
-                { $addToSet: { historyOfRecive: transactionSucces._id } },
-                { new: true }
-            ),
+            User.findByIdAndUpdate(senderUser._id, { $addToSet: { historyOfSend: transactionSucces._id } }),
+            User.findByIdAndUpdate(receiverUser._id, { $addToSet: { historyOfRecive: transactionSucces._id } })
         ]);
 
         res.status(201).json({
             success: true,
             message: "Transacción ejecutada con éxito",
-            transactionSucces,
+            transactionSucces
         });
 
         const timeout = setTimeout(async () => {
             try {
-                await Transaction.findByIdAndUpdate(
-                    transactionSucces._id,
-                    { status: "FINALLY" },
-                    { new: true }
-                );
-            } catch (error) {
-                console.log("Error al setear el status");
+                await Transaction.findByIdAndUpdate(transactionSucces._id, { status: "FINALLY" });
+            } catch {
+                console.log("Error al actualizar estado FINALLY");
             }
         }, 120000);
 
         const interval = setInterval(async () => {
             try {
-                const updatedTransaction = await Transaction.findById(
-                    transactionSucces._id
-                );
-                if (updatedTransaction?.status === "REVERTED") {
+                const updated = await Transaction.findById(transactionSucces._id);
+                if (updated?.status === "REVERTED") {
                     clearTimeout(timeout);
                     clearInterval(interval);
-                    console.log("Timeout cancelado porque la transacción fue revertida");
                 }
             } catch { }
         }, 5000);
+
     } catch (error) {
+        console.error(error);
         res.status(500).json({
             success: false,
             message: "Error al ejecutar la transacción",
-            error: error.message,
+            error: error.message
         });
     }
 };
@@ -129,123 +162,184 @@ export const revertTransaction = async (req, res) => {
         const { uid } = req.params;
 
         const transaction = await Transaction.findById(uid);
+        if (!transaction) {
+            return res.status(404).json({ success: false, message: "Transacción no encontrada" });
+        }
 
         if (transaction.status === "FINALLY") {
             return res.status(400).json({
                 success: false,
-                message: "No se puede revertir la transacción, tiempo límite excedido",
-            });
-        }
-        if (transaction.status === "REVERTED") {
-            return res.status(400).json({
-                success: false,
-                message: "La transacción ya fue revertida",
+                message: "No se puede revertir, tiempo límite excedido"
             });
         }
 
+        if (transaction.status === "REVERTED") {
+            return res.status(400).json({
+                success: false,
+                message: "La transacción ya fue revertida"
+            });
+        }
+
+        const accountMap = {
+            monetary: "noAccountBalance",
+            saving: "savingAccountBalance",
+            foreing: "foreingCurrencyBalance"
+        };
+
+        const accountReceiver = accountMap[transaction.type];
+        const accountSender = accountMap[transaction.typeSender];
+
+        const senderUser = await User.findById(transaction.sender);
+        const receiverUser = await User.findById(transaction.receiver);
+
+        const senderWallet = await Wallet.findById(senderUser.wallet);
+        const receiverWallet = await Wallet.findById(receiverUser.wallet);
+
+        await Transaction.findByIdAndUpdate(uid, { status: "REVERTED" });
+
+        await Promise.all([
+            Wallet.findByIdAndUpdate(receiverWallet._id, {
+                $inc: { [accountReceiver]: -transaction.amount }
+            }),
+            Wallet.findByIdAndUpdate(senderWallet._id, {
+                $inc: { [accountSender]: transaction.amount }
+            })
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            message: "Transacción revertida con éxito"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al ejecutar la reversión",
+            error: error.message
+        });
+    }
+};
+
+
+export const getTransacionHistory = async (req, res) => {
+    try {
+        const { limite = 5, desde = 0 } = req.query;
+        const query = { status: true };
+
+        const total = await User.countDocuments(query);
+
+        const users = await User.find(query)
+            .skip(Number(desde))
+            .limit(Number(limite))
+            .populate('historyOfSend')
+            .populate('historyOfRecive')
+            .select('historyOfSend historyOfRecive name userName email');
+
+        return res.status(200).json({
+            success: true,
+            total,
+            users,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Error al obtener usuarios con detalles de transacciones",
+            error: err.message,
+        });
+    }
+}
+
+
+export const depositTransaction = async (req, res) => {
+    try {
+        const { receiver, sender, amount, type } = req.body;
+
+        const findReceiverUser = async (receiver) => {
+            if (mongoose.Types.ObjectId.isValid(receiver)) {
+                const user = await User.findById(receiver);
+                if (user) return user;
+            }
+
+            if (typeof receiver === "string" && receiver.includes("@")) {
+                const user = await User.findOne({ email: receiver });
+                if (user) return user;
+            }
+
+            const accountNumber = Number(receiver);
+            if (!isNaN(accountNumber)) {
+                const wallet = await Wallet.findOne({
+                    $or: [
+                        { noAccount: accountNumber },
+                        { savingAccount: accountNumber },
+                        { foreingCurrency: accountNumber }
+                    ]
+                });
+
+                if (wallet) {
+                    const user = await User.findOne({ wallet: wallet._id });
+                    if (user) return user;
+                }
+            }
+
+            return null;
+        };
+
+        const receiverUser = await findReceiverUser(receiver);
+        if (!receiverUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Usuario receptor no encontrado",
+            });
+        }
+
+        const receiverWallet = await Wallet.findById(receiverUser.wallet);
+        if (!receiverWallet) {
+            return res.status(404).json({
+                success: false,
+                message: "Wallet del receptor no encontrada",
+            });
+        }
+
+        const typeSender = "Deposit";
         const typeOfAccount = {
             monetary: "noAccountBalance",
             saving: "savingAccountBalance",
             foreing: "foreingCurrencyBalance",
         };
 
-        const accountReceiver = typeOfAccount[transaction.type];
-        const accountSender = typeOfAccount[transaction.typeSender];
-
-        const senderUser = await User.findById(transaction.sender);
-        const receiverUser = await User.findById(transaction.receiver);
-
-        const senderWalletId = senderUser.wallet;
-        const receiverWalletId = receiverUser.wallet;
-
-        await Transaction.findByIdAndUpdate(
-            uid,
-            { status: "REVERTED" },
-            { new: true }
-        );
-
-        await Wallet.findByIdAndUpdate(receiverWalletId,{ $inc: { [accountReceiver]: -transaction.amount } },);
-        await Wallet.findByIdAndUpdate(senderWalletId, { $inc: { [accountSender]: transaction.amount } }, { new: true });
-
-        return res.status(200).json({
-            success: true,
-            message: "Transacción revertida con éxito",
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Error al ejecutar la reversión",
-            error: error.message,
-        });
-    }
-};
-
-export const getTransactionHistory = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { all } = req.query;
-
-        const user = await User.findById(userId).populate({
-            path: "historyOfSend",
-            select: "-__v",
-            populate: {
-                path: "receiver",
-                select: "name email",
-            },
-            options:
-                all === "true"
-                    ? { sort: { createdAt: -1 } }
-                    : { sort: { createdAt: -1 }, limit: 5 },
-        });
-
-        res.status(200).json({
-            success: true,
-            message:
-                all === "true"
-                    ? "Historial completo de transacciones obtenido correctamente"
-                    : "Últimas 5 transacciones obtenidas correctamente",
-            history: user.historyOfSend,
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al obtener el historial de transacciones",
-            error: error.message,
-        });
-    }
-};
-
-
-export const depositTransaction = async (req, res) => {
-    try {
-        const { receiver, sender, amount, type } = req.body
-        const receiverUser = await User.findById(receiver)
-        const receiverWallet = await Wallet.findById(receiverUser.wallet)
-        const typeSender = "Deposit"
-        const typeOfAccount = {
-            monetary: "noAccountBalance",
-            saving: "savingAccountBalance",
-            foreing: " foreingCurrencyBalance"
+        const typeAcountField = typeOfAccount[type];
+        if (!typeAcountField) {
+            return res.status(400).json({
+                success: false,
+                message: "Tipo de cuenta inválido",
+            });
         }
-        const typeAcountSender = typeOfAccount[type]
 
-        await Wallet.findByIdAndUpdate(receiverWallet._id, { [typeAcountSender]: amount }, { new: true })
-        
-        const transactionDeposit = await Transaction.create({ receiver, sender, amount, type, typeSender })
+        await Wallet.findByIdAndUpdate(receiverWallet._id, { $inc: { [typeAcountField]: amount } }, { new: true });
+
+        const transactionDeposit = await Transaction.create({
+            receiver: receiverUser._id, 
+            sender,
+            amount,
+            type,
+            typeSender,
+        });
+
+        await User.findByIdAndUpdate(receiverUser._id, { $addToSet: { historyOfRecive: transactionDeposit._id } });
 
         return res.status(201).json({
             success: true,
             message: "Deposito realizado con éxito",
-            transactionDeposit
-        })
+            transactionDeposit,
+        });
     } catch (error) {
         return res.status(500).json({
             success: false,
             message: "Error al ejecutar el deposito",
-            error: error.message
-        })
+            error: error.message,
+        });
     }
-}
+};
 
 export const updateDepositTransaction = async (req, res) => {
     try {
@@ -342,4 +436,4 @@ export const updateTransaction = async (req, res) => {
             error: error.message
         });
     }
-}
+};
