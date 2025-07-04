@@ -21,6 +21,7 @@ export const userSeeder = async () => {
             password: encryptedPass,
             workName: "Worker",
             monthEarnings: 9999,
+            role: "ADMIN_ROLE"
         });
 
         console.log("Administrador creado correctamente");
