@@ -13,7 +13,7 @@ const router = Router();
 /**
  * @swagger
  * /wallet/create:
- *   get:
+ *   post:
  *     summary: Crear una nueva cuenta de wallet
  *     tags: [Wallet]
  *     responses:
@@ -24,7 +24,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get("/create", createAccount);
+router.post("/create", createAccount);
 
 /**
  * @swagger

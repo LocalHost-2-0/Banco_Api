@@ -34,7 +34,7 @@ export const getUsers = async (req, res) => {
 
     const [total, users] = await Promise.all([
       User.countDocuments(query),
-      User.find(query).skip(Number(desde)).limit(Number(limite)),
+      User.find(query).skip(Number(desde)).limit(Number(limite)).populate("wallet"),
     ]);
 
     return res.status(200).json({
