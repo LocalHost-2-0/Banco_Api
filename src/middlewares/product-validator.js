@@ -24,7 +24,7 @@ export const addProductValidator = [
     body('category')
         .notEmpty()
         .withMessage('Product category is required')
-        .isIn(['Electrodomesticos', 'Ropa', 'Juguetes', 'Tecnologia', 'Hogar'])
+        .isIn(['SEGUROS', 'TARJETA', 'PLANES', 'PRESTAMOS', 'PROMOCION'])
         .withMessage('Invalid product category'),
     body('stock')
         .notEmpty()
