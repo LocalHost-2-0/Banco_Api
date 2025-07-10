@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUserById, getWallet , getBalance, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
+import { getUserById, getUsersTransaction, getWallet, getBalance, getUsers, updatePassword, updateUser, deleteUser, getHistory, addFavorite, getFavorites } from "./user.controller.js";
 import { getUserByIdValidator, updatePasswordValidator, updateUserValidator, deleteUserValidator, addFavoriteValidator, getFavoritesValidator } from "../middlewares/user-validators.js";
 
 const router = Router();
@@ -192,7 +192,7 @@ router.get(
  *       404:
  *         description: Usuario no encontrado
  */
-router.post('/addFavorite', addFavoriteValidator , addFavorite);
+router.post('/addFavorite', addFavoriteValidator, addFavorite);
 
 /**
  * @swagger
@@ -213,7 +213,7 @@ router.post('/addFavorite', addFavoriteValidator , addFavorite);
  *       404:
  *         description: Usuario no encontrado
  */
-router.get('/Favorites', getFavoritesValidator ,getFavorites);
+router.get('/Favorites', getFavoritesValidator, getFavorites);
 
 router.get(
     "/getBalance/:uid",
@@ -223,6 +223,11 @@ router.get(
 router.get(
     "/getWallet/:uid",
     getWallet
+)
+
+router.get(
+    "/getUserTransactions/",
+    getUsersTransaction
 )
 
 export default router;
