@@ -317,3 +317,35 @@ export const getWallet = async (req, res) => {
     });
   }
 };
+
+export const getUsersTransaction = async (req, res) => {
+  try {
+    const { limite = 5, desde = 0 } = req.query;
+    const query = { status: true };
+
+    const [total, users] = await Promise.all([
+      User.countDocuments(query),
+      User.find(query)
+        .skip(Number(desde))
+        .limit(Number(limite))
+    ]);
+
+    const sortedUsers = users.sort((a, b) => {
+      const totalA = (a.historyOfSend?.length || 0) + (a.historyOfRecive?.length || 0);
+      const totalB = (b.historyOfSend?.length || 0) + (b.historyOfRecive?.length || 0);
+      return totalB - totalA;
+    });
+
+    return res.status(200).json({
+      success: true,
+      total,
+      users: sortedUsers,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al obtener los usuarios",
+      error: err.message,
+    });
+  }
+};
